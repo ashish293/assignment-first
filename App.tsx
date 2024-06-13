@@ -82,14 +82,17 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: '600',
+    fontFamily: 'FiraCode',
   },
   sectionDescription: {
     marginTop: 8,
     fontSize: 18,
     fontWeight: '400',
+    fontFamily: 'FiraCode',
   },
   highlight: {
     fontWeight: '700',
+    fontFamily: 'FiraCode',
   },
   todoItem: {
     fontSize: 18,
@@ -97,6 +100,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     padding: 8,
     borderBottomColor: 'gray',
+    fontFamily: 'FiraCode',
   },
 });
 
