@@ -1,14 +1,47 @@
-import React, {useState, useEffect} from 'react';
-import {View, Button, TextInput, Text, StyleSheet} from 'react-native';
+import CountryCodePicker from '@/Components/CountryCodePicker';
+import AppLayout from '@/layout/AppLayout';
+import {useAppDispatch} from '@/redux/hooks';
+import {setAuthUser} from '@/redux/userSlice';
+import AppToast from '@/utils/AppToast';
 import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
+import {Button, Input, makeStyles} from '@rneui/themed';
+import React, {useEffect, useState} from 'react';
+import {Keyboard, View} from 'react-native';
+import {OtpInput} from 'react-native-otp-entry';
+
+const useStyles = makeStyles(theme => ({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.colors.white,
+  },
+  inputContainer: {
+    marginTop: 10,
+    maxWidth: '80%',
+  },
+  message: {
+    marginTop: 20,
+    color: 'red',
+    textAlign: 'center',
+  },
+  phoneContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    margin: 10,
+    paddingStart: 0,
+  },
+}));
 
 const PhoneSignIn: React.FC = () => {
-  const [phoneNumber, setPhoneNumber] = useState<string>('');
+  const styles = useStyles();
+  const [countryCode, setCountryCode] = useState('91');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [otp, setOtp] = useState('');
+  const [loading, setLoading] = useState<string>('');
   const [confirm, setConfirm] =
     useState<FirebaseAuthTypes.ConfirmationResult | null>(null);
-  const [code, setCode] = useState<string>('');
-  const [message, setMessage] = useState<string>('');
-
+  const dispatch = useAppDispatch();
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber; // unsubscribe on unmount
@@ -16,86 +49,85 @@ const PhoneSignIn: React.FC = () => {
 
   function onAuthStateChanged(user: FirebaseAuthTypes.User | null) {
     if (user) {
-      setMessage('You have successfully logged in.');
+      console.log('You have successfully logged in.');
       // Navigate to a different screen or hide the OTP input
     }
   }
 
-  async function signInWithPhoneNumber(phoneNumber: string) {
+  const validatePhoneNumber = () => {
+    if (!phoneNumber) {
+      AppToast.error('Phone number cannot be empty');
+    } else if (phoneNumber.length !== 10) {
+      AppToast.error('Phone number must be 10 digits');
+    } else return true;
+  };
+
+  const signInWithPhoneNumber = async () => {
+    if (!validatePhoneNumber()) return;
     try {
-      const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
+      setLoading('Sending verification code');
+      console.log(`+${countryCode}${phoneNumber}`);
+
+      const confirmation = await auth().signInWithPhoneNumber(
+        `+${countryCode}${phoneNumber}`,
+      );
       setConfirm(confirmation);
     } catch (error) {
-      setMessage('Failed to send verification code.');
+      AppToast.error('Failed to send verification code.');
       console.error(error);
+    } finally {
+      setLoading('');
     }
-  }
+  };
 
-  async function confirmCode() {
+  useEffect(() => {
+    console.log(confirm);
+  }, [confirm]);
+  const confirmCode = async (code: string) => {
     try {
       if (confirm) {
+        setLoading('Confirming code');
         await confirm.confirm(code);
-        setMessage('Code confirmed successfully.');
+        AppToast.success('Code confirmed successfully.');
+        dispatch(setAuthUser({phone: `+${countryCode}${phoneNumber}`}));
       } else {
-        setMessage('No confirmation result available.');
+        AppToast.error('No confirmation result available.');
       }
     } catch (error) {
-      setMessage('Invalid code.');
+      AppToast.error('Invalid code.');
       console.error(error);
+    } finally {
+      setLoading('');
     }
-  }
+  };
 
+  const onFilled = (code: string) => {
+    Keyboard.dismiss();
+    confirmCode(code);
+  };
   return (
-    <View style={styles.container}>
-      {!confirm ? (
-        <>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter phone number"
-            value={phoneNumber}
-            onChangeText={text => setPhoneNumber(text)}
-            keyboardType="phone-pad"
-          />
-          <Button
-            title="Phone Number Sign In"
-            onPress={() => signInWithPhoneNumber(phoneNumber)}
-          />
-        </>
-      ) : (
-        <>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter verification code"
-            value={code}
-            onChangeText={text => setCode(text)}
-            keyboardType="number-pad"
-          />
-          <Button title="Confirm Code" onPress={confirmCode} />
-        </>
-      )}
-      {message ? <Text style={styles.message}>{message}</Text> : null}
-    </View>
+    <AppLayout containerStyle={styles.container} loading={loading}>
+      <View style={styles.phoneContainer}>
+        <CountryCodePicker
+          countryCode={countryCode}
+          setCountryCode={setCountryCode}
+        />
+        <Input
+          placeholder="Enter phone number"
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+          keyboardType="phone-pad"
+          containerStyle={styles.inputContainer}
+        />
+      </View>
+      <Button title="Send Verification Code" onPress={signInWithPhoneNumber} />
+      <OtpInput
+        onTextChange={setOtp}
+        onFilled={onFilled}
+        theme={{containerStyle: {padding: 40}}}
+      />
+    </AppLayout>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-  message: {
-    marginTop: 20,
-    color: 'red',
-    textAlign: 'center',
-  },
-});
 
 export default PhoneSignIn;
