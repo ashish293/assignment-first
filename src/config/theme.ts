@@ -3,9 +3,11 @@ import { createTheme } from "@rneui/themed";
 const theme = createTheme({
   lightColors: {
     primary: '#FF7D29',
+    background: 'white',
   },
   darkColors: {
-    primary: 'blue',
+    primary: '#FF7D29',
+    background:'#222'
   },
   components: {
     Input:{

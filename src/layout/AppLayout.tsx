@@ -1,6 +1,6 @@
 import {ActivityIndicator, StyleProp, View, ViewStyle} from 'react-native';
 import React from 'react';
-import {Overlay, Text} from '@rneui/themed';
+import {Overlay, Text, useTheme} from '@rneui/themed';
 
 interface AppLayoutProps {
   loading?: string;
@@ -13,8 +13,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   loading,
   containerStyle,
 }) => {
+  const {theme} = useTheme();
+  console.log(theme.colors.background);
+
   return (
-    <View style={containerStyle}>
+    <View style={[{backgroundColor: theme.colors.background}, containerStyle]}>
       {children}
       <Overlay
         isVisible={!!loading}

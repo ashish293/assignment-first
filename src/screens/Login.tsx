@@ -14,7 +14,6 @@ const useStyles = makeStyles(theme => ({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.white,
   },
   inputContainer: {
     marginTop: 10,
@@ -121,11 +120,13 @@ const PhoneSignIn: React.FC = () => {
         />
       </View>
       <Button title="Send Verification Code" onPress={signInWithPhoneNumber} />
-      <OtpInput
-        onTextChange={setOtp}
-        onFilled={onFilled}
-        theme={{containerStyle: {padding: 40}}}
-      />
+      {confirm && (
+        <OtpInput
+          onTextChange={setOtp}
+          onFilled={onFilled}
+          theme={{containerStyle: {padding: 40}}}
+        />
+      )}
     </AppLayout>
   );
 };
