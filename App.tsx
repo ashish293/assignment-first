@@ -11,19 +11,16 @@ import {Colors} from 'react-native/Libraries/NewAppScreen';
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const StatusBarStyle = {
+    backgroundColor: isDarkMode ? Colors.darker : 'white',
   };
   theme.mode = useColorScheme() || 'light';
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <ThemeProvider theme={theme}>
-          <StatusBar
-            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-            backgroundColor={backgroundStyle.backgroundColor}
-          />
           <Navigator />
+          {/* <Splash /> */}
           <Toast />
         </ThemeProvider>
       </PersistGate>

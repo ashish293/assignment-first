@@ -1,4 +1,10 @@
-import {ActivityIndicator, StyleProp, View, ViewStyle} from 'react-native';
+import {
+  ActivityIndicator,
+  StatusBar,
+  StyleProp,
+  View,
+  ViewStyle,
+} from 'react-native';
 import React from 'react';
 import {Overlay, Text, useTheme} from '@rneui/themed';
 
@@ -14,10 +20,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   containerStyle,
 }) => {
   const {theme} = useTheme();
-  console.log(theme.colors.background);
 
   return (
     <View style={[{backgroundColor: theme.colors.background}, containerStyle]}>
+      <StatusBar
+        barStyle={theme.mode == 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={theme.colors.background}
+      />
       {children}
       <Overlay
         isVisible={!!loading}
